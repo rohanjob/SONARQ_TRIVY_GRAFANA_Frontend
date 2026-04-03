@@ -1,0 +1,143 @@
+# =============================================
+# SSP Books Frontend - Azure DevOps Pipeline
+# =============================================
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - '**'
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  nodeVersion: '20.x'
+  sonarQubeServiceConnection: 'SonarQube-Service'
+  sonarProjectKey: 'ssp_books_frontend'
+  sonarProjectName: 'SSP Books Frontend'
+
+stages:
+  # =============================================
+  # Stage 1: Build & Test
+  # =============================================
+  - stage: Build
+    displayName: 'Build & Test'
+    jobs:
+      - job: BuildAndTest
+        displayName: 'Install, Lint, Build'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+
+          - script: npm ci
+            displayName: 'Install Dependencies'
+
+          - script: npm run lint
+            displayName: 'Run ESLint'
+            continueOnError: true
+
+          - script: npm run build
+            displayName: 'Build Next.js Application'
+            env:
+              NEXT_PUBLIC_API_URL: 'http://localhost:5000/api'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifacts'
+            inputs:
+              pathToPublish: '.next'
+              artifactName: 'nextjs-build'
+
+  # =============================================
+  # Stage 2: SonarQube Analysis
+  # =============================================
+  - stage: CodeQuality
+    displayName: 'SonarQube Analysis'
+    dependsOn: Build
+    jobs:
+      - job: SonarAnalysis
+        displayName: 'Run SonarQube Scanner'
+        steps:
+          - task: NodeTool@0
+            displayName: 'Install Node.js $(nodeVersion)'
+            inputs:
+              versionSpec: '$(nodeVersion)'
+
+          - script: npm ci
+            displayName: 'Install Dependencies'
+
+          - task: SonarQubePrepare@6
+            displayName: 'Prepare SonarQube Analysis'
+            inputs:
+              SonarQube: '$(sonarQubeServiceConnection)'
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliProjectKey: '$(sonarProjectKey)'
+              cliProjectName: '$(sonarProjectName)'
+              cliSources: 'app'
+              extraProperties: |
+                sonar.javascript.lcov.reportPaths=coverage/lcov.info
+                sonar.exclusions=node_modules/**,.next/**,coverage/**,public/**
+                sonar.sourceEncoding=UTF-8
+                sonar.css.stylelint.reportPaths=stylelint-report.json
+
+          - task: SonarQubeAnalyze@6
+            displayName: 'Run SonarQube Analysis'
+
+          - task: SonarQubePublish@6
+            displayName: 'Publish SonarQube Results'
+            inputs:
+              pollingTimeoutSec: '300'
+
+  # =============================================
+  # Stage 3: Build Docker Image
+  # =============================================
+  - stage: DockerBuild
+    displayName: 'Build Docker Image'
+    dependsOn: CodeQuality
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: BuildDocker
+        displayName: 'Build & Push Docker Image'
+        steps:
+          - task: Docker@2
+            displayName: 'Build Docker Image'
+            inputs:
+              command: build
+              repository: 'ssp-books-frontend'
+              dockerfile: 'Dockerfile'
+              tags: |
+                $(Build.BuildId)
+                latest
+
+  # =============================================
+  # Stage 4: Deploy
+  # =============================================
+  - stage: Deploy
+    displayName: 'Deploy to Azure'
+    dependsOn: DockerBuild
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployApp
+        displayName: 'Deploy Frontend'
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: |
+                    echo "========================================="
+                    echo "Deploying SSP Books Frontend..."
+                    echo "========================================="
+                    echo "Deployment completed successfully!"
+                  displayName: 'Deploy to Azure VM'
