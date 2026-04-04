@@ -21,7 +21,7 @@ pool:
 
 variables:
   nodeVersion: '20.x'
-  sonarQubeServiceConnection: 'SonarQube-B'
+  sonarQubeServiceConnection: 'SonarQube-F'
   sonarProjectKey: 'ssp_books_frontend'
   sonarProjectName: 'SSP Books Frontend'
 
