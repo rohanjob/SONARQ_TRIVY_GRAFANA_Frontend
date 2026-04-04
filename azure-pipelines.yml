@@ -1,5 +1,5 @@
 # =============================================
-# SSP Books Backend - Azure DevOps Pipeline
+# SSP Books Frontend - Azure DevOps Pipeline
 # =============================================
 
 trigger:
@@ -22,8 +22,8 @@ pool:
 variables:
   nodeVersion: '20.x'
   sonarQubeServiceConnection: 'SonarQube-B'
-  sonarProjectKey: 'ssp_books_backend'
-  sonarProjectName: 'SSP Books Backend'
+  sonarProjectKey: 'ssp_books_frontend'
+  sonarProjectName: 'SSP Books Frontend'
 
 stages:
   # =============================================
@@ -33,7 +33,7 @@ stages:
     displayName: 'Build & Test'
     jobs:
       - job: BuildAndTest
-        displayName: 'Install, Lint, Test'
+        displayName: 'Install, Lint, Build'
         steps:
           - task: NodeTool@0
             displayName: 'Install Node.js $(nodeVersion)'
@@ -47,30 +47,16 @@ stages:
             displayName: 'Run ESLint'
             continueOnError: true
 
-          - script: npm test -- --reporters=default --reporters=jest-junit
-            displayName: 'Run Unit Tests'
+          - script: npm run build
+            displayName: 'Build Next.js Application'
             env:
-              NODE_ENV: test
-              DB_HOST: localhost
-              DB_PORT: 5432
-              DB_NAME: ssp_books_test
-              DB_USER: postgres
-              DB_PASSWORD: postgres
-              JWT_SECRET: test_jwt_secret
+              NEXT_PUBLIC_API_URL: 'http://localhost:5000/api'
 
-          - task: PublishTestResults@2
-            displayName: 'Publish Test Results'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifacts'
             inputs:
-              testResultsFormat: 'JUnit'
-              testResultsFiles: '**/junit.xml'
-              mergeTestResults: true
-            condition: always()
-
-          - task: PublishCodeCoverageResults@2
-            displayName: 'Publish Code Coverage'
-            inputs:
-              summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml'
-            condition: always()
+              pathToPublish: '.next'
+              artifactName: 'nextjs-build'
 
   # =============================================
   # Stage 2: SonarQube Analysis
@@ -90,40 +76,18 @@ stages:
           - script: npm ci --legacy-peer-deps
             displayName: 'Install Dependencies'
 
-          - script: npm test
-            displayName: 'Generate Coverage For SonarQube'
-            env:
-              NODE_ENV: test
-              DB_HOST: localhost
-              DB_PORT: 5432
-              DB_NAME: ssp_books_test
-              DB_USER: postgres
-              DB_PASSWORD: postgres
-              JWT_SECRET: test_jwt_secret
-
           - task: SonarQubePrepare@8
             displayName: 'Prepare SonarQube Analysis'
             inputs:
-              SonarQube: 'SonarQube-B'
+              SonarQube: '$(sonarQubeServiceConnection)'
               scannerMode: 'CLI'
               configMode: 'manual'
-              cliProjectKey: 'ssp_books_backend'
-              cliProjectName: 'SSP Books Backend'
-              cliSources: 'src'
+              cliProjectKey: '$(sonarProjectKey)'
+              cliProjectName: '$(sonarProjectName)'
+              cliSources: 'app'
               extraProperties: |
-                sonar.javascript.lcov.reportPaths=coverage/lcov.info
-                sonar.tests=tests
-                sonar.test.inclusions=**/*.test.js
-                sonar.exclusions=node_modules/**,coverage/**
+                sonar.exclusions=node_modules/**,.next/**,coverage/**,public/**
                 sonar.sourceEncoding=UTF-8
-
-          - task: Bash@3
-            displayName: 'Remove branch name for Community Edition'
-            inputs:
-              targetType: 'inline'
-              script: |
-                NEW_PARAMS=$(python3 -c "import os, json; p = json.loads(os.environ.get('SONARQUBE_SCANNER_PARAMS', '{}')); p.pop('sonar.branch.name', None); print(json.dumps(p))")
-                echo "##vso[task.setvariable variable=SONARQUBE_SCANNER_PARAMS]$NEW_PARAMS"
 
           - task: SonarQubeAnalyze@8
             displayName: 'Run SonarQube Analysis'
@@ -148,7 +112,7 @@ stages:
             displayName: 'Build Docker Image'
             inputs:
               command: build
-              repository: 'ssp-books-backend'
+              repository: 'ssp-books-frontend'
               dockerfile: 'Dockerfile'
               tags: |
                 $(Build.BuildId)
@@ -163,7 +127,7 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: DeployApp
-        displayName: 'Deploy Backend'
+        displayName: 'Deploy Frontend'
         environment: 'production'
         strategy:
           runOnce:
@@ -171,7 +135,7 @@ stages:
               steps:
                 - script: |
                     echo "========================================="
-                    echo "Deploying SSP Books Backend..."
+                    echo "Deploying SSP Books Frontend..."
                     echo "========================================="
                     echo "Deployment completed successfully!"
                   displayName: 'Deploy to Azure VM'
