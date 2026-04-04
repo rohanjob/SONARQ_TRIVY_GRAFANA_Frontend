@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
-import { localCart } from '../../lib/api';
+import { API_BASE, localCart } from '../../lib/api';
 import { fallbackCourses } from '../../lib/fallbackData';
 import styles from './page.module.css';
 
@@ -25,7 +25,7 @@ export default function CourseDetailPage({ params }) {
 
   async function loadCourse() {
     try {
-      const res = await fetch(`http://localhost:5000/api/courses/${slug}`);
+      const res = await fetch(`${API_BASE}/courses/${slug}`);
       const data = await res.json();
       setCourse(data.data || fallbackCourses.find((c) => c.slug === slug));
     } catch {

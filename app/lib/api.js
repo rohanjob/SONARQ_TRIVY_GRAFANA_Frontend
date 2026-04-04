@@ -2,7 +2,7 @@
 // SSP Books Frontend - API Utility
 // =============================================
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://20.24.192.145:5000/api').replace(/\/$/, '');
 
 /**
  * Fetch wrapper with error handling

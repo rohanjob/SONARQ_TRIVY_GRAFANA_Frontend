@@ -50,7 +50,7 @@ stages:
           - script: npm run build
             displayName: 'Build Next.js Application'
             env:
-              NEXT_PUBLIC_API_URL: 'http://localhost:5000/api'
+              NEXT_PUBLIC_API_URL: 'http://20.24.192.145:5000/api'
 
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Build Artifacts'

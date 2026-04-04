@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CourseCard from './components/CourseCard';
-import { localCart } from './lib/api';
+import { API_BASE, localCart } from './lib/api';
 import { fallbackCourses, fallbackCategories } from './lib/fallbackData';
 import styles from './page.module.css';
 
@@ -22,8 +22,8 @@ export default function Home() {
     try {
       // Try backend first
       const [coursesRes, categoriesRes] = await Promise.all([
-        fetch('http://localhost:5000/api/courses/featured').then((r) => r.json()),
-        fetch('http://localhost:5000/api/categories').then((r) => r.json()),
+        fetch(`${API_BASE}/courses/featured`).then((r) => r.json()),
+        fetch(`${API_BASE}/categories`).then((r) => r.json()),
       ]);
       setCourses(coursesRes.data || fallbackCourses.filter((c) => c.is_featured));
       setCategories(categoriesRes.data || fallbackCategories);

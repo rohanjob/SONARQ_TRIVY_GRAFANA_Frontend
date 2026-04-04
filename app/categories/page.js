@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { API_BASE } from '../lib/api';
 import { fallbackCategories } from '../lib/fallbackData';
 import styles from './page.module.css';
 
@@ -17,7 +18,7 @@ export default function CategoriesPage() {
 
   async function loadCategories() {
     try {
-      const res = await fetch('http://localhost:5000/api/categories');
+      const res = await fetch(`${API_BASE}/categories`);
       const data = await res.json();
       setCategories(data.data || fallbackCategories);
     } catch {

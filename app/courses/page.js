@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CourseCard from '../components/CourseCard';
-import { localCart } from '../lib/api';
+import { API_BASE, localCart } from '../lib/api';
 import { fallbackCourses, fallbackCategories } from '../lib/fallbackData';
 import styles from './page.module.css';
 
@@ -33,8 +33,8 @@ export default function CoursesPage() {
   async function loadCourses() {
     try {
       const [coursesRes, catsRes] = await Promise.all([
-        fetch('http://localhost:5000/api/courses?limit=50').then((r) => r.json()),
-        fetch('http://localhost:5000/api/categories').then((r) => r.json()),
+        fetch(`${API_BASE}/courses?limit=50`).then((r) => r.json()),
+        fetch(`${API_BASE}/categories`).then((r) => r.json()),
       ]);
       setCourses(coursesRes.data || fallbackCourses);
       setCategories(catsRes.data || fallbackCategories);
