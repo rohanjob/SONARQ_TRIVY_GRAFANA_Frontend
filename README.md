@@ -10,7 +10,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## SonarQube and Azure CI/CD
 ![Project Architecture](images/AzureDE.png)
 ![Project Architecture](images/Sonar.png)
-![Project Architecture](images/SonarQ.png)
+![Project Architecture](images/SonarQU.png)
 
 
 
