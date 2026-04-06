@@ -1,5 +1,19 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## 🚀Azure DevOps Deployment and Release
+
+![Project Architecture](images/Azure.png)
+![Project Architecture](images/Release.png)
+![Project Architecture](images/FBDeployment.png)
+
+
+## SonarQube and Azure CI/CD
+![Project Architecture](images/AzureDE.png)
+![Project Architecture](images/Sonar.png)
+![Project Architecture](images/SonarQ.png)
+
+
+
 ## Getting Started
 
 First, run the development server:
