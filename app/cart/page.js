@@ -14,10 +14,18 @@ const categoryIcons = {
 };
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(() => localCart.get());
 
   useEffect(() => {
-    setCartItems(localCart.get());
+    const handleCartUpdate = () => {
+      setCartItems(localCart.get());
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
   }, []);
 
   function removeItem(courseId) {

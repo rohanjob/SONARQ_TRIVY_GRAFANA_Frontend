@@ -15,25 +15,41 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let isActive = true;
 
-  async function loadData() {
-    try {
-      // Try backend first
-      const [coursesRes, categoriesRes] = await Promise.all([
-        fetch(`${API_BASE}/courses/featured`).then((r) => r.json()),
-        fetch(`${API_BASE}/categories`).then((r) => r.json()),
-      ]);
-      setCourses(coursesRes.data || fallbackCourses.filter((c) => c.is_featured));
-      setCategories(categoriesRes.data || fallbackCategories);
-    } catch {
-      // Fallback to local data
-      setCourses(fallbackCourses.filter((c) => c.is_featured));
-      setCategories(fallbackCategories);
+    async function loadData() {
+      try {
+        const [coursesRes, categoriesRes] = await Promise.all([
+          fetch(`${API_BASE}/courses/featured`).then((r) => r.json()),
+          fetch(`${API_BASE}/categories`).then((r) => r.json()),
+        ]);
+
+        if (!isActive) {
+          return;
+        }
+
+        setCourses(coursesRes.data || fallbackCourses.filter((course) => course.is_featured));
+        setCategories(categoriesRes.data || fallbackCategories);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setCourses(fallbackCourses.filter((course) => course.is_featured));
+        setCategories(fallbackCategories);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
     }
-    setLoading(false);
-  }
+
+    loadData();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   function handleAddToCart(course) {
     localCart.add(course);

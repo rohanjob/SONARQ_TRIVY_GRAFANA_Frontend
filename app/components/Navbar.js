@@ -4,28 +4,37 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 
+function getStoredCartCount() {
+  if (typeof window === 'undefined') {
+    return 0;
+  }
+
+  return JSON.parse(localStorage.getItem('ssp_cart') || '[]').length;
+}
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const [cartCount, setCartCount] = useState(getStoredCartCount);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
 
-    // Load cart count from localStorage
-    const cart = JSON.parse(localStorage.getItem('ssp_cart') || '[]');
-    setCartCount(cart.length);
-
-    // Listen for cart updates
     const handleCartUpdate = () => {
-      const updated = JSON.parse(localStorage.getItem('ssp_cart') || '[]');
-      setCartCount(updated.length);
+      setCartCount(getStoredCartCount());
     };
+
+    const handleStorage = () => {
+      setCartCount(getStoredCartCount());
+    };
+
+    window.addEventListener('scroll', handleScroll);
     window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('storage', handleStorage);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 

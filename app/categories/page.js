@@ -13,19 +13,37 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+    let isActive = true;
 
-  async function loadCategories() {
-    try {
-      const res = await fetch(`${API_BASE}/categories`);
-      const data = await res.json();
-      setCategories(data.data || fallbackCategories);
-    } catch {
-      setCategories(fallbackCategories);
+    async function loadCategories() {
+      try {
+        const res = await fetch(`${API_BASE}/categories`);
+        const data = await res.json();
+
+        if (!isActive) {
+          return;
+        }
+
+        setCategories(data.data || fallbackCategories);
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setCategories(fallbackCategories);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
     }
-    setLoading(false);
-  }
+
+    loadCategories();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return (
     <>
