@@ -1,50 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 SSP Books - Frontend UI
 
-## 🚀Azure DevOps Deployment and Release
+Next.js frontend application for the SSP Books course buying platform.
+
+## 🚀 Azure DevOps Deployment and Release
 
 ![Project Architecture](images/Azure.png)
 ![Project Architecture](images/Release.png)
 ![Project Architecture](images/FBDeployment.png)
 
+## 🛡️ SonarQube & Trivy CI/CD Pipeline
 
-## SonarQube and Azure CI/CD
 ![Project Architecture](images/AzureDE.png)
-![Project Architecture](images/Sonar.png)
-![Project Architecture](images/SonarQU.png)
 
-
+This project implements a secure "**Shift-Left**" Azure DevOps CI/CD pipeline:
+1. **Build**: Tests and creates the Next.js production build.
+2. **SonarQube Analysis**: Runs static application security testing (SAST) and code quality checks.
+3. **Docker Build**: Containerizes the application.
+4. **Trivy Scanning**: Analyzes the raw Docker image. Blocks staging if `HIGH` or `CRITICAL` vulnerabilities are discovered.
+5. **ACR Push**: Dispatches the verified image to Azure Container Registry (`sspbooksacr.azurecr.io/ssp-books-frontend`).
+6. **Azure Deployment**: Deploys the container to the live cloud environment.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
