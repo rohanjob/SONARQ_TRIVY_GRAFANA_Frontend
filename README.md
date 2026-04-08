@@ -9,7 +9,7 @@ Next.js frontend application for the SSP Books course buying platform.
 ![Project Architecture](images/FBDeployment.png)
 
 ## 🛡️ SonarQube & Trivy CI/CD Pipeline
-
+![Project Architecture](images/Trivy.png)
 ![Project Architecture](images/AzureDE.png)
 
 This project implements a secure "**Shift-Left**" Azure DevOps CI/CD pipeline:
